@@ -1,25 +1,25 @@
 package com.mossle.disk.service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.activation.DataSource;
-
 import javax.annotation.Resource;
-
-import com.mossle.api.store.StoreConnector;
-import com.mossle.api.store.StoreDTO;
-
-import com.mossle.disk.persistence.domain.DiskInfo;
-import com.mossle.disk.persistence.manager.DiskInfoManager;
-import com.mossle.disk.util.FileUtils;
-
-import com.mossle.spi.store.InternalStoreConnector;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.mossle.api.store.StoreConnector;
+import com.mossle.api.store.StoreDTO;
+import com.mossle.auth.persistence.domain.Role;
+import com.mossle.auth.service.AuthService;
+import com.mossle.disk.persistence.domain.DiskInfo;
+import com.mossle.disk.persistence.manager.DiskInfoManager;
+import com.mossle.disk.util.FileUtils;
+import com.mossle.spi.store.InternalStoreConnector;
 
 @Service
 public class DiskService {
@@ -27,21 +27,50 @@ public class DiskService {
     private DiskInfoManager diskInfoManager;
     private StoreConnector storeConnector;
     private InternalStoreConnector internalStoreConnector;
-
+    @Autowired
+    private AuthService authService;
     /**
      * 显示对应用户，对应目录下的所有文件.
      */
-    public List<DiskInfo> listFiles(String userId, String parentPath) {
-        String hql = "from DiskInfo where creator=? and parentPath=? and status='active' order by dirType";
-
-        return diskInfoManager.find(hql, userId, parentPath);
+    @SuppressWarnings("unchecked")
+	public List<DiskInfo> listFiles(String userId, String parentPath,Integer roleId) {
+        String hql = "from DiskInfo where   parentPath=? and status='active' ";
+        
+        List<Role> roleList=null;
+        
+        if(roleId!=null&&roleId!=-1) {
+        	roleList=new ArrayList<>();
+        	Role role=new Role(roleId.longValue());
+        	roleList.add(role);
+        }else {
+        	roleList=authService.listRole(Long.parseLong(userId));
+        }
+ 
+        if(roleList.size()==0) {
+        	return new ArrayList<>();
+        }
+        
+        String queryRoleId="";
+   
+        hql+=" and (";
+        for(int i=0,size=roleList.size();i<size;i++) {
+        	queryRoleId=("|"+roleList.get(i).getId()+"|");
+        	hql+="roleIds like '%"+queryRoleId+"%' ";
+        	if(i<(size-1)) {
+        		hql+=" or ";
+        	}
+        }
+        hql+=")";
+        hql+="order by dirType";
+        
+        return diskInfoManager.find(hql,  parentPath);
     }
 
     /**
      * 上传文件.
      */
     public DiskInfo createFile(String userId, DataSource dataSource,
-            String name, long size, String parentPath, String tenantId)
+            String name, long size, String parentPath, String tenantId,String[] roleIds)
             throws Exception {
         String modelName = "disk/user/" + userId;
         String keyName = parentPath + "/" + name;
@@ -50,24 +79,24 @@ public class DiskService {
         String type = FileUtils.getSuffix(name);
 
         return this.createDiskInfo(userId, name, size, storeDto.getKey(), type,
-                1, parentPath);
+                1, parentPath,roleIds);
     }
 
     /**
      * 新建文件夹.
      */
-    public DiskInfo createDir(String userId, String name, String parentPath) {
+    public DiskInfo createDir(String userId, String name, String parentPath,String roleId) {
         internalStoreConnector.mkdir("1/disk/user/" + userId + "/" + parentPath
                 + "/" + name);
 
-        return this.createDiskInfo(userId, name, 0, null, "dir", 0, parentPath);
+        return this.createDiskInfo(userId, name, 0, null, "dir", 0, parentPath,new String[]{roleId});
     }
 
     /**
      * 上传文件，或新建文件夹.
      */
     public DiskInfo createDiskInfo(String userId, String name, long size,
-            String ref, String type, int dirType, String parentPath) {
+            String ref, String type, int dirType, String parentPath,String[] roleIds) {
         if (name == null) {
             logger.info("name cannot be null");
 
@@ -126,6 +155,21 @@ public class DiskService {
         diskInfo.setRef(ref);
         diskInfo.setStatus("active");
         diskInfo.setParentPath(parentPath);
+        
+        if(roleIds!=null) {
+        	String finalRoleIds="";
+        	
+        	for(String id:roleIds) {
+        		if(id==null) {
+        			continue;
+        		}
+        		finalRoleIds+=("|"+id+"|");
+        	}
+        	//设置选中的角色id
+        	diskInfo.setRoleIds(finalRoleIds);
+        }
+        
+        
         diskInfoManager.save(diskInfo);
 
         return diskInfo;

@@ -23,6 +23,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
 
+import com.mossle._common.kit.EmailKit;
 import com.mossle.javamail.persistence.domain.JavamailConfig;
 import com.mossle.javamail.persistence.domain.JavamailMessage;
 import com.mossle.javamail.persistence.manager.JavamailConfigManager;
@@ -100,12 +101,13 @@ public class JavamailService {
             String content, JavamailConfig javamailConfig)
             throws MessagingException {
         logger.debug("send : {}, {}", to, subject);
-
         try {
             Properties props = createSmtpProperties(javamailConfig);
             String username = javamailConfig.getUsername();
             String password = javamailConfig.getPassword();
 
+           
+            
             // 创建Session实例对象
             Session session = Session.getInstance(props, new SmtpAuthenticator(
                     username, password));
@@ -122,7 +124,7 @@ public class JavamailService {
             // 设置收件人
             message.setRecipients(RecipientType.TO, InternetAddress.parse(to));
             // 设置html内容为邮件正文，指定MIME类型为text/html类型，并指定字符编码为gbk
-            message.setContent(content, "text/html;charset=gbk");
+            message.setContent(content, "text/html;charset=utf-8");
 
             // 保存并生成最终的邮件内容
             message.saveChanges();

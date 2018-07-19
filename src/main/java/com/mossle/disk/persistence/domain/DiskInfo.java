@@ -88,7 +88,8 @@ public class DiskInfo implements java.io.Serializable {
 
     /** null. */
     private String securityLevel;
-
+    /** null. */
+    private String roleIds;
     /** . */
     private Set<DiskInfo> diskInfos = new HashSet<DiskInfo>(0);
 
@@ -453,8 +454,17 @@ public class DiskInfo implements java.io.Serializable {
     public Set<DiskShare> getDiskShares() {
         return this.diskShares;
     }
+    
+    @Column(name = "ROLE_IDS", length = 50)
+    public String getRoleIds() {
+		return roleIds;
+	}
 
-    /**
+	public void setRoleIds(String roleIds) {
+		this.roleIds = roleIds;
+	}
+
+	/**
      * @param diskShares
      *            .
      */

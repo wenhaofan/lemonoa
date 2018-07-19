@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -45,14 +46,19 @@ public class DiskInfoController {
     private DiskService diskService;
     private TenantHolder tenantHolder;
     @Autowired
+    
     private AuthService authService;
+    
+    public static void main(String[] args) {
+		System.out.println("123".length());
+	}
+    
     /**
      * 列表显示.
      */
     @RequestMapping("disk-info-list")
-    public String list(
-            @RequestParam(value = "path", required = false) String path,
-            Model model) {
+    public String list( @RequestParam(value = "path", required = false) String path,
+            Model model,@RequestParam(value="roleId",required=false)Integer roleId) {
     	
         if (path == null) {
             path = "";
@@ -60,10 +66,11 @@ public class DiskInfoController {
 
         String userId = currentUserHolder.getUserId();
         List<Role> roleList=authService.listRole(Long.parseLong(userId));
-        List<DiskInfo> diskInfos = diskService.listFiles(userId, path);
+        List<DiskInfo> diskInfos = diskService.listFiles(userId, path,roleId);
         model.addAttribute("diskInfos", diskInfos);
         model.addAttribute("path", path);
-
+        model.addAttribute("roleId", roleId);
+        model.addAttribute("roleList", roleList);
         return "disk/disk-info-list";
     }
 
@@ -73,13 +80,13 @@ public class DiskInfoController {
     @RequestMapping("disk-info-grid")
     public String grid(
             @RequestParam(value = "path", required = false) String path,
-            Model model) {
+            Model model,@RequestParam("roleId")Integer roleId) {
         if (path == null) {
             path = "";
         }
 
         String userId = currentUserHolder.getUserId();
-        List<DiskInfo> diskInfos = diskService.listFiles(userId, path);
+        List<DiskInfo> diskInfos = diskService.listFiles(userId, path,roleId);
         model.addAttribute("diskInfos", diskInfos);
         model.addAttribute("path", path);
 
@@ -92,13 +99,23 @@ public class DiskInfoController {
     @RequestMapping("disk-info-upload")
     @ResponseBody
     public String upload(@RequestParam("file") MultipartFile file,
-            @RequestParam("path") String path) throws Exception {
+            @RequestParam("path") String path,@RequestParam(value="roleId",required=false)String roleId) throws Exception {
         String userId = currentUserHolder.getUserId();
         String tenantId = tenantHolder.getTenantId();
-        diskService.createFile(userId, new MultipartFileDataSource(file),
-                file.getOriginalFilename(), file.getSize(), path, tenantId);
-       
         
+        String[] roleIds=new String[48];
+        
+        if(!roleId.equals("-1")) {
+        	roleIds[0]=roleId;
+        }else {
+        	List<Role> roleList=authService.listRole(Long.parseLong(userId));
+        	for(int i=0,size=roleList.size();i<size;i++) {
+        		roleIds[i]=roleList.get(i).getId().toString();
+        	}
+        }
+        
+        diskService.createFile(userId, new MultipartFileDataSource(file),
+                file.getOriginalFilename(), file.getSize(), path, tenantId,roleIds);
         return "{\"success\":true}";
     }
 
@@ -107,11 +124,10 @@ public class DiskInfoController {
      */
     @RequestMapping("disk-info-createDir")
     public String createDir(@RequestParam("path") String path,
-            @RequestParam("name") String name) {
+            @RequestParam("name") String name,@RequestParam("roleId")String roleId) {
         String userId = currentUserHolder.getUserId();
-        diskService.createDir(userId, name, path);
-
-        return "redirect:/disk/disk-info-list.do?path=" + path;
+        diskService.createDir(userId, name, path,roleId);
+        return "redirect:/disk/disk-info-list.do?path=" + path+"&roleId="+roleId;
     }
 
     /**
@@ -225,7 +241,7 @@ public class DiskInfoController {
         String userId = currentUserHolder.getUserId();
         StringBuilder buff = new StringBuilder();
         buff.append("[{\"id\":0,\"name\":\"根目录\",\"open\":true,\"iconSkin\":\"ico_open\",\"children\":");
-        buff.append(this.convertJson(diskService.listFiles(userId, ""), userId));
+        buff.append(this.convertJson(diskService.listFiles(userId, "",null), userId));
         buff.append("}]");
 
         return buff.toString();

@@ -1,13 +1,34 @@
 <%@page contentType="text/html;charset=UTF-8"%>
+<%@include file="/common/taglibs.jsp"%>
 <div>
   <div id="uploadFileButton" class="btn btn-primary fileinput-button">
     <span>上传文件</span>
-    <input type="file" name="file" class="fileupload" data-no-uniform="true" data-url="disk-info-upload.do" data-form-data='{"path":"${path}"}'>
+    <input type="file" name="file" class="fileupload" data-no-uniform="true" data-url="disk-info-upload.do?roleId=<c:if test="${roleId!=null}">${roleId}</c:if>${roleId==null?"-1":''}" data-form-data='{"path":"${path}"}'>
+ 
   </div>
-
+  	
   &nbsp;
+	<div style="display:inline-block;">
+		分类:
+		<select class="form-control" id="role-select" style="width:300px;display:inline-block;">
+			<option value="-1">----</option>
+			<c:forEach items="${roleList}" var="role">
+				 <option value="${role.id}" ${roleId==role.id?'selected':''} >${role.name }</option>
+				 
+			</c:forEach>
+		</select>
+	</div>
+	&nbsp;
+	<button id="createDirButton" class="btn btn-default" data-toggle="modal" data-target="#createDirDialog">新建文件夹</button>
+	<script type="text/javascript">
+		$(function(){
 
-  <button id="createDirButton" class="btn btn-default" data-toggle="modal" data-target="#createDirDialog">新建文件夹</button>
+			$("#role-select").on("change",function(){
+				var optionVal=$("option:selected",this).val();
+ 				window.location.href="/lemon/disk/disk-info-list.do?roleId="+optionVal;
+			});
+		})
+	</script>
 <!--
   <a href="${tenantPrefix}/disk/disk-info-list.do" class="btn btn-default"><i class="glyphicon glyphicon-list"></i>&nbsp;我的文件</a>
 
@@ -90,6 +111,7 @@
     <div class="modal-content">
 	  <form action="disk-info-createDir.do" method="post">
 	  <input type="hidden" name="path" value="${path}">
+	   <input type="hidden" name="roleId" value="${roleId}">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h4 class="modal-title">创建目录</h4>
