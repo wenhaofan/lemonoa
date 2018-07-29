@@ -13,13 +13,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.mossle.api.store.StoreConnector;
+import com.mossle.api.store.StoreDTO;
 import com.mossle.api.tenant.TenantHolder;
 import com.mossle.auth.persistence.domain.Role;
 import com.mossle.auth.service.AuthService;
@@ -32,7 +32,6 @@ import com.mossle.disk.persistence.domain.DiskShare;
 import com.mossle.disk.persistence.manager.DiskInfoManager;
 import com.mossle.disk.persistence.manager.DiskShareManager;
 import com.mossle.disk.service.DiskService;
-import com.mossle.security.util.SpringSecurityUtils;
 
 @Controller
 @RequestMapping("disk")
@@ -49,10 +48,25 @@ public class DiskInfoController {
     
     private AuthService authService;
     
-    public static void main(String[] args) {
-		System.out.println("123".length());
-	}
-    
+ 
+    /**
+       * 选择文件
+     */
+    @RequestMapping("disk-select")
+    public String select( @RequestParam(value = "path", required = false) String path,
+            Model model,@RequestParam(value="roleId",required=false)Integer roleId) {
+        if (path == null) {
+            path = "";
+        }
+        String userId = currentUserHolder.getUserId();
+        List<Role> roleList=authService.listRole(Long.parseLong(userId));
+        List<DiskInfo> diskInfos = diskService.listFiles(userId, path,roleId);
+        model.addAttribute("diskInfos", diskInfos);
+        model.addAttribute("path", path);
+        model.addAttribute("roleId", roleId);
+        model.addAttribute("roleList", roleList);
+        return "disk/disk-info-list-select";
+    }
     /**
      * 列表显示.
      */
@@ -173,9 +187,10 @@ public class DiskInfoController {
         try {
             ServletUtils.setFileDownloadHeader(request, response,
                     diskInfo.getName());
-            is = storeConnector
-                    .getStore("default/user/" + userId, diskInfo.getRef(),
-                            tenantId).getDataSource().getInputStream();
+           StoreDTO sd= storeConnector
+                    .getStore("disk/user/" + userId, diskInfo.getRef(),
+                            tenantId);
+           is = sd.getDataSource().getInputStream();
             IoUtils.copyStream(is, response.getOutputStream());
         } finally {
             if (is != null) {
