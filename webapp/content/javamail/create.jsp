@@ -158,10 +158,10 @@ border: 0px solid red !important;}
       </div>
       <div class="modal-body">
        	<iframe id="selectDisk" width="550" height="500" src="http://127.0.0.1:8080/lemon/disk/disk-select.do"></iframe>
-      </div>
+      </div> 
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal" onclick="getSelectInfo()">确定</button>
-        <button type="button" class="btn btn-primary">关闭</button>
+        <button type="button" class="btn btn-primary" >关闭</button>
       </div>
     </div>
   </div>

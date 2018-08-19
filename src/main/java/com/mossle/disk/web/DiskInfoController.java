@@ -50,7 +50,7 @@ public class DiskInfoController {
     
  
     /**
-       * 选择文件
+       * 选择文件 
      */
     @RequestMapping("disk-select")
     public String select( @RequestParam(value = "path", required = false) String path,

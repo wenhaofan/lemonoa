@@ -50,7 +50,7 @@ public class DiskController {
     private UserConnector userConnector;
 
     /**
-     * 首页.
+     * 首页. 
      */
     @RequestMapping("disk-home")
     public String home(

@@ -2,12 +2,10 @@ package com.mossle.javamail.service;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-
 import java.util.Date;
 import java.util.Properties;
 
 import javax.annotation.Resource;
-
 import javax.mail.Address;
 import javax.mail.BodyPart;
 import javax.mail.Folder;
@@ -23,17 +21,15 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
 
-import com.mossle._common.kit.EmailKit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+ 
 import com.mossle.javamail.persistence.domain.JavamailConfig;
 import com.mossle.javamail.persistence.domain.JavamailMessage;
 import com.mossle.javamail.persistence.manager.JavamailConfigManager;
 import com.mossle.javamail.persistence.manager.JavamailMessageManager;
 import com.mossle.javamail.support.SmtpAuthenticator;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.springframework.stereotype.Service;
 
 @Service
 public class JavamailService {
