@@ -2,6 +2,7 @@ package com.mossle.javamail.service;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+<<<<<<< HEAD
 import java.util.Date;
 import java.util.Properties;
 
@@ -121,6 +122,129 @@ public class JavamailService {
             message.setRecipients(RecipientType.TO, InternetAddress.parse(to));
             // 设置html内容为邮件正文，指定MIME类型为text/html类型，并指定字符编码为gbk
             message.setContent(content, "text/html;charset=utf-8");
+=======
+
+import java.util.Date;
+import java.util.Properties;
+
+import javax.annotation.Resource;
+
+import javax.mail.Address;
+import javax.mail.BodyPart;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.Message.RecipientType;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Part;
+import javax.mail.Session;
+import javax.mail.Store;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeUtility;
+
+import com.mossle.javamail.persistence.domain.JavamailConfig;
+import com.mossle.javamail.persistence.domain.JavamailMessage;
+import com.mossle.javamail.persistence.manager.JavamailConfigManager;
+import com.mossle.javamail.persistence.manager.JavamailMessageManager;
+import com.mossle.javamail.support.SmtpAuthenticator;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class JavamailService {
+    private static Logger logger = LoggerFactory
+            .getLogger(JavamailService.class);
+    private JavamailConfigManager javamailConfigManager;
+    private JavamailMessageManager javamailMessageManager;
+
+    public Properties createSmtpProperties(JavamailConfig javamailConfig) {
+        Properties props = new Properties();
+        props.setProperty("mail.transport.protocol",
+                javamailConfig.getSendType());
+        props.setProperty("mail.smtp.host", javamailConfig.getSendHost());
+        props.setProperty("mail.smtp.port", javamailConfig.getSendPort());
+        props.setProperty("mail.smtp.auth", "true");
+
+        if ("ssl".equals(javamailConfig.getSendSecure())) {
+            props.setProperty("mail.smtp.ssl.enable", "true");
+            props.setProperty("mail.smtp.ssl.trust",
+                    javamailConfig.getSendHost());
+        } else if ("ssl-all".equals(javamailConfig.getSendSecure())) {
+            props.setProperty("mail.smtp.ssl.enable", "true");
+            props.setProperty("mail.smtp.ssl.trust", "*");
+        } else {
+            logger.info("unsuppport : {}", javamailConfig.getSendSecure());
+        }
+
+        return props;
+    }
+
+    public Properties createPop3Properties(JavamailConfig javamailConfig) {
+        Properties props = new Properties();
+        props.setProperty("mail.store.protocol",
+                javamailConfig.getReceiveType());
+        props.setProperty("mail.pop3.host", javamailConfig.getReceiveHost());
+        props.setProperty("mail.pop3.port", javamailConfig.getReceivePort());
+
+        if ("ssl".equals(javamailConfig.getReceiveSecure())) {
+            props.setProperty("mail.pop3.ssl.enable", "true");
+            props.setProperty("mail.pop3.ssl.trust",
+                    javamailConfig.getReceiveHost());
+        } else if ("ssl-all".equals(javamailConfig.getReceiveSecure())) {
+            props.setProperty("mail.pop3.ssl.enable", "true");
+            props.setProperty("mail.pop3.ssl.trust", "*");
+        } else {
+            logger.info("unsuppport : {}", javamailConfig.getReceiveSecure());
+        }
+
+        return props;
+    }
+
+    public void send(String from, String to, String cc, String bcc,
+            String subject, String content) throws MessagingException {
+        JavamailConfig javamailConfig = javamailConfigManager.findUniqueBy(
+                "userId", from);
+        this.send(to, cc, bcc, subject, content, javamailConfig);
+    }
+
+    public void send(String to, String subject, String content,
+            JavamailConfig javamailConfig) throws MessagingException {
+        this.send(to, null, null, subject, content, javamailConfig);
+    }
+
+    public void send(String to, String cc, String bcc, String subject,
+            String content, JavamailConfig javamailConfig)
+            throws MessagingException {
+        logger.debug("send : {}, {}", to, subject);
+
+        try {
+            Properties props = createSmtpProperties(javamailConfig);
+            String username = javamailConfig.getUsername();
+            String password = javamailConfig.getPassword();
+
+            // 创建Session实例对象
+            Session session = Session.getInstance(props, new SmtpAuthenticator(
+                    username, password));
+            session.setDebug(false);
+
+            // 创建MimeMessage实例对象
+            MimeMessage message = new MimeMessage(session);
+            // 设置邮件主题
+            message.setSubject(subject);
+            // 设置发送人
+            message.setFrom(new InternetAddress(username));
+            // 设置发送时间
+            message.setSentDate(new Date());
+            // 设置收件人
+            message.setRecipients(RecipientType.TO, InternetAddress.parse(to));
+            // 设置html内容为邮件正文，指定MIME类型为text/html类型，并指定字符编码为gbk
+            message.setContent(content, "text/html;charset=gbk");
+>>>>>>> branch 'master' of https://github.com/wenhaofan/lemonoa.git
 
             // 保存并生成最终的邮件内容
             message.saveChanges();

@@ -89,6 +89,7 @@ $(function() {
 
   <div class="panel panel-default">
     <div class="panel-heading" role="tab" id="collapse-header-javamail" data-toggle="collapse" data-parent="#accordion" href="#collapse-body-javamail" aria-expanded="true" aria-controls="collapse-body-javamail">
+<<<<<<< HEAD
       <h4 class="panel-title" style="display:inline-block;">
 	    <i class="glyphicon glyphicon-list"></i>
         新邮件
@@ -186,4 +187,53 @@ function delectFile(curr){
 	$(curr).remove();
 }
 </script>
+=======
+      <h4 class="panel-title">
+	    <i class="glyphicon glyphicon-list"></i>
+        新邮件
+      </h4>
+    </div>
+    <div id="collapse-body-javamail" class="panel-collapse collapse ${currentMenu == 'javamail' ? 'in' : ''}" role="tabpanel" aria-labelledby="collapse-header-javamail">
+      <div class="panel-body full-height">
+
+    <form class="form-horizontal" action="send.do" method="post">
+
+<div class="form-group">
+    <div class="input-group">
+      <div class="input-group-addon">收件人：</div>
+      <input type="text" class="form-control" placeholder="" name="receiver">
+    </div>
+</div>
+
+<div class="form-group">
+    <div class="input-group">
+      <div class="input-group-addon">主题：</div>
+      <input type="text" class="form-control" placeholder="" name="subject">
+    </div>
+</div>
+
+<div class="form-group">
+<textarea id="message_content" name="content"></textarea>
+</div>
+
+<div class="form-group">
+<button class="btn btn-default">发送</button>
+</div>
+
+	</form>
+
+
+	  
+	  </div>
+
+    </div>
+  </div>
+
+</div>
+
+	</div>
+
+  </body>
+
+>>>>>>> branch 'master' of https://github.com/wenhaofan/lemonoa.git
 </html>

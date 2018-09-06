@@ -22,8 +22,13 @@
             <div class="alert-fixed-top" data-alerts="alerts" data-titles="{}" data-ids="myid" data-fade="1000"></div>
  
             <%pageContext.setAttribute("listType", "grid");%> 
+<<<<<<< HEAD
 
             <%@include file="_upload.jsp"%>
+=======
+            <%@include file="_upload.jsp"%>
+
+>>>>>>> branch 'master' of https://github.com/wenhaofan/lemonoa.git
 <div class="row">
   <c:forEach items="${diskInfos}" var="item" varStatus="status">
   <div class="col-md-2 text-center">

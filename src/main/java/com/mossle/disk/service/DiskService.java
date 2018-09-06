@@ -1,5 +1,6 @@
 package com.mossle.disk.service;
 
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -170,6 +171,134 @@ public class DiskService {
         }
         
         
+=======
+import java.util.Date;
+import java.util.List;
+
+import javax.activation.DataSource;
+
+import javax.annotation.Resource;
+
+import com.mossle.api.store.StoreConnector;
+import com.mossle.api.store.StoreDTO;
+
+import com.mossle.disk.persistence.domain.DiskInfo;
+import com.mossle.disk.persistence.manager.DiskInfoManager;
+import com.mossle.disk.util.FileUtils;
+
+import com.mossle.spi.store.InternalStoreConnector;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class DiskService {
+    private static Logger logger = LoggerFactory.getLogger(DiskService.class);
+    private DiskInfoManager diskInfoManager;
+    private StoreConnector storeConnector;
+    private InternalStoreConnector internalStoreConnector;
+
+    /**
+     * 显示对应用户，对应目录下的所有文件.
+     */
+    public List<DiskInfo> listFiles(String userId, String parentPath) {
+        String hql = "from DiskInfo where creator=? and parentPath=? and status='active' order by dirType";
+
+        return diskInfoManager.find(hql, userId, parentPath);
+    }
+
+    /**
+     * 上传文件.
+     */
+    public DiskInfo createFile(String userId, DataSource dataSource,
+            String name, long size, String parentPath, String tenantId)
+            throws Exception {
+        String modelName = "disk/user/" + userId;
+        String keyName = parentPath + "/" + name;
+        StoreDTO storeDto = storeConnector.saveStore(modelName, keyName,
+                dataSource, tenantId);
+        String type = FileUtils.getSuffix(name);
+
+        return this.createDiskInfo(userId, name, size, storeDto.getKey(), type,
+                1, parentPath);
+    }
+
+    /**
+     * 新建文件夹.
+     */
+    public DiskInfo createDir(String userId, String name, String parentPath) {
+        internalStoreConnector.mkdir("1/disk/user/" + userId + "/" + parentPath
+                + "/" + name);
+
+        return this.createDiskInfo(userId, name, 0, null, "dir", 0, parentPath);
+    }
+
+    /**
+     * 上传文件，或新建文件夹.
+     */
+    public DiskInfo createDiskInfo(String userId, String name, long size,
+            String ref, String type, int dirType, String parentPath) {
+        if (name == null) {
+            logger.info("name cannot be null");
+
+            return null;
+        }
+
+        name = name.trim();
+
+        if (name.length() == 0) {
+            logger.info("name cannot be empty");
+
+            return null;
+        }
+
+        if (parentPath == null) {
+            parentPath = "";
+        } else {
+            parentPath = parentPath.trim();
+        }
+
+        if (parentPath.length() != 0) {
+            if (!parentPath.startsWith("/")) {
+                parentPath = "/" + parentPath;
+            }
+
+            int index = parentPath.lastIndexOf("/");
+            String targetParentPath = parentPath.substring(0, index);
+            String targetName = parentPath.substring(index + 1);
+            String hql = "from DiskInfo where parentPath=? and name=?";
+            DiskInfo parent = diskInfoManager.findUnique(hql, targetParentPath,
+                    targetName);
+
+            if (parent == null) {
+                logger.info("cannot find : {} {} {}", parentPath,
+                        targetParentPath, targetName);
+
+                return null;
+            }
+        }
+
+        String hql = "select name from DiskInfo where creator=? and parentPath=?";
+        List<String> currentNames = diskInfoManager.find(hql, userId,
+                parentPath);
+        String targetName = FileUtils.calculateName(name, currentNames);
+
+        Date now = new Date();
+        DiskInfo diskInfo = new DiskInfo();
+        diskInfo.setName(targetName);
+        diskInfo.setType(type);
+        diskInfo.setFileSize(size);
+        diskInfo.setCreator(userId);
+        diskInfo.setCreateTime(now);
+        diskInfo.setLastModifier(userId);
+        diskInfo.setLastModifiedTime(now);
+        diskInfo.setDirType(dirType);
+        diskInfo.setRef(ref);
+        diskInfo.setStatus("active");
+        diskInfo.setParentPath(parentPath);
+>>>>>>> branch 'master' of https://github.com/wenhaofan/lemonoa.git
         diskInfoManager.save(diskInfo);
 
         return diskInfo;

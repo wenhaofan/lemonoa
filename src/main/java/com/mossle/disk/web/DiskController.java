@@ -50,7 +50,11 @@ public class DiskController {
     private UserConnector userConnector;
 
     /**
+<<<<<<< HEAD
      * 首页. 
+=======
+     * 首页.
+>>>>>>> branch 'master' of https://github.com/wenhaofan/lemonoa.git
      */
     @RequestMapping("disk-home")
     public String home(
