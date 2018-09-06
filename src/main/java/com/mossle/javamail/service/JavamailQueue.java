@@ -8,12 +8,11 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
-import com.mossle.javamail.support.JavamailCmd;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.stereotype.Component;
+
+import com.mossle.javamail.support.JavamailCmd;
 
 @Component
 public class JavamailQueue {

@@ -5,16 +5,19 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Resource;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+
 import com.mossle.api.tenant.TenantHolder;
 import com.mossle.api.user.UserConnector;
-
 import com.mossle.auth.persistence.domain.Access;
 import com.mossle.auth.persistence.domain.Role;
 import com.mossle.auth.persistence.domain.UserStatus;
@@ -22,13 +25,6 @@ import com.mossle.auth.persistence.manager.AccessManager;
 import com.mossle.auth.persistence.manager.RoleManager;
 import com.mossle.auth.persistence.manager.UserStatusManager;
 import com.mossle.auth.service.AuthService;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.springframework.jdbc.core.JdbcTemplate;
-
-import org.springframework.stereotype.Component;
 
 @Component
 @Path("auth")

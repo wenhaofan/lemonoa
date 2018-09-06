@@ -6,7 +6,6 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-<<<<<<< HEAD
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,74 +23,6 @@ import com.mossle.auth.persistence.manager.RoleManager;
 import com.mossle.auth.persistence.manager.UserStatusManager;
 import com.mossle.auth.support.Exporter;
 import com.mossle.auth.support.Importer;
-
-@Transactional
-@Service
-public class AuthService {
-    private static final int PRIORITY_STEP = 10;
-    private static Logger logger = LoggerFactory.getLogger(AuthService.class);
-    private UserStatusManager userStatusManager;
-    private RoleManager roleManager;
-    private JdbcTemplate jdbcTemplate;
-    private AccessManager accessManager;
-    private PermManager permManager;
-
-    public List<Role> listRole(Long userId){
-	  String hql = "select r.id as id from Role r join r.userStatuses u where u.id=?";
-      List<Long> userRoleIds = roleManager.find(hql, userId);
-       return roleManager.findByIds(userRoleIds);
-    }
-    public UserStatus createOrGetUserStatus(String username, String ref,
-    
-            String userRepoRef, String tenantId) {
-        UserStatus userStatus = userStatusManager.findUnique(
-                "from UserStatus where username=? and tenantId=?", username,
-                tenantId);
-
-        if (userStatus == null) {
-            userStatus = new UserStatus();
-            userStatus.setUsername(username);
-            userStatus.setRef(ref);
-            userStatus.setUserRepoRef(userRepoRef);
-            userStatus.setTenantId(tenantId);
-            // TODO: 考虑status同步的策略，目前是默认都设置成了有效
-            userStatus.setStatus(1);
-            userStatusManager.save(userStatus);
-        }
-
-        return userStatus;
-    }
-
-    public void configUserRole(Long userId, List<Long> roleIds,
-            String userRepoRef, String tenantId, boolean clearRoles) {
-        logger.debug("userId: {}, roleIds: {}", userId, roleIds);
-
-        UserStatus userStatus = userStatusManager.get(userId);
-
-        if (userStatus == null) {
-            logger.warn("cannot find UserStatus : {}", userId);
-=======
-import com.mossle.auth.persistence.domain.Access;
-import com.mossle.auth.persistence.domain.Perm;
-import com.mossle.auth.persistence.domain.Role;
-import com.mossle.auth.persistence.domain.UserStatus;
-import com.mossle.auth.persistence.manager.AccessManager;
-import com.mossle.auth.persistence.manager.PermManager;
-import com.mossle.auth.persistence.manager.RoleManager;
-import com.mossle.auth.persistence.manager.UserStatusManager;
-import com.mossle.auth.support.Exporter;
-import com.mossle.auth.support.Importer;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.springframework.jdbc.core.JdbcTemplate;
-
-import org.springframework.stereotype.Service;
-
-import org.springframework.transaction.annotation.Transactional;
-
-import org.springframework.util.Assert;
 
 @Transactional
 @Service
@@ -132,8 +63,7 @@ public class AuthService {
 
         if (userStatus == null) {
             logger.warn("cannot find UserStatus : {}", userId);
-
->>>>>>> branch 'master' of https://github.com/wenhaofan/lemonoa.git
+ 
             return;
         }
 
